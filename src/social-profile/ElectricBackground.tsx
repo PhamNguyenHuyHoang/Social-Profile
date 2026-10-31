@@ -27,12 +27,14 @@ function ElectricBackground() {
     if (!canvas || !ctx) return;
 
     let frame = 0;
+    let frameTimer: number | null = null;
     let lastFrame = 0;
     let disposed = false;
     let width = 0;
     let height = 0;
     let particles: Particle[] = [];
     let previousPointer: { x: number; y: number; time: number } | null = null;
+    let lastPointerBurst = 0;
     const strikes: LightningStrike[] = [];
     let nextStrike = performance.now() + 220;
 
@@ -43,7 +45,7 @@ function ElectricBackground() {
       const length = Math.max(1, Math.hypot(dx, dy));
       const normalX = -dy / length;
       const normalY = dx / length;
-      const depth = Math.max(5, Math.min(8, Math.ceil(Math.log2(length / 5))));
+      const depth = Math.max(4, Math.min(7, Math.ceil(Math.log2(length / 7))));
       const split = (from: Point, to: Point, roughness: number, level: number): Point[] => {
         if (level <= 0) return [from, to];
         const displacement = (Math.random() - .5) * roughness;
@@ -89,7 +91,7 @@ function ElectricBackground() {
         paths.push({ points: trunk, delay: boltIndex * random(12, 34), branch: false });
 
         // Side forks split off from every trunk and taper into smaller forks.
-        const branchCount = Math.round(random(8, 13));
+        const branchCount = Math.round(random(6, 9));
         for (let i = 0; i < branchCount; i += 1) {
           const anchorIndex = 3 + Math.floor(Math.random() * Math.max(1, trunk.length - 6));
           const anchor = trunk[anchorIndex];
@@ -101,7 +103,7 @@ function ElectricBackground() {
           const branch = jaggedPath(anchor, tip, branchLength * .24);
           paths.push({ points: branch, delay: random(24, 86), branch: true });
 
-          if (Math.random() > .42 && branch.length > 4) {
+          if (Math.random() > .62 && branch.length > 4) {
             const joint = branch[Math.max(2, branch.length - 3)];
             const forkAngle = angle + (Math.random() < .5 ? -1 : 1) * random(.58, 1.05);
             const forkLength = branchLength * random(.3, .55);
@@ -119,7 +121,7 @@ function ElectricBackground() {
     };
 
     const resize = () => {
-      const ratio = Math.min(window.devicePixelRatio || 1, 1.25);
+      const ratio = Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 1 : 1.15);
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = Math.round(width * ratio);
@@ -127,7 +129,7 @@ function ElectricBackground() {
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      const amount = Math.min(2100, Math.max(900, Math.round(width * height / 480)));
+      const amount = Math.min(1350, Math.max(520, Math.round(width * height / 850)));
       particles = Array.from({ length: amount }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -136,7 +138,7 @@ function ElectricBackground() {
         radius: random(.45, 1.45),
         phase: random(0, Math.PI * 2),
         speed: random(.5, 1.7),
-        star: Math.random() > .88,
+        star: Math.random() > .93,
       }));
     };
 
@@ -145,16 +147,17 @@ function ElectricBackground() {
       const now = performance.now();
       const previous = previousPointer;
       previousPointer = { x: event.clientX, y: event.clientY, time: now };
-      if (!previous || now - previous.time > 180) return;
+      if (!previous || now - previous.time > 180 || now - lastPointerBurst < 30) return;
       const dx = event.clientX - previous.x;
       const dy = event.clientY - previous.y;
       const distance = Math.hypot(dx, dy);
       if (distance < 2) return;
       const directionX = dx / distance;
       const directionY = dy / distance;
-      const burst = Math.min(12, Math.max(5, Math.round(distance / 5)));
+      const burst = Math.min(6, Math.max(3, Math.round(distance / 9)));
+      lastPointerBurst = now;
       for (let i = 0; i < burst; i += 1) {
-        const speed = random(65, 175);
+        const speed = random(55, 135);
         particles.push({
           x: event.clientX + random(-6, 6), y: event.clientY + random(-6, 6),
           vx: directionX * speed + random(-55, 55), vy: directionY * speed + random(-55, 55),
@@ -162,7 +165,7 @@ function ElectricBackground() {
           star: Math.random() > .35, life: random(.65, 1.25), maxLife: 1.25,
         });
       }
-      if (particles.length > 2400) particles.splice(0, particles.length - 2400);
+      if (particles.length > 1800) particles.splice(0, particles.length - 1800);
     };
 
     const drawStar = (particle: Particle, alpha: number) => {
@@ -207,14 +210,22 @@ function ElectricBackground() {
         ctx.restore();
       };
       const widthScale = path.branch ? .52 : 1;
-      drawLine('#168dff', 7.4 * widthScale, alpha * .62, path.branch ? 8 : 13);
-      drawLine('#58baff', 3.6 * widthScale, alpha * .82, path.branch ? 5 : 9);
-      drawLine('#f4fbff', 1.8 * widthScale, alpha, path.branch ? 2 : 4);
+      drawLine('#168dff', 7.4 * widthScale, alpha * .62, path.branch ? 0 : 8);
+      drawLine('#58baff', 3.6 * widthScale, alpha * .82, path.branch ? 0 : 3);
+      drawLine('#f4fbff', 1.8 * widthScale, alpha, 0);
+    };
+
+    const scheduleNextFrame = () => {
+      if (disposed || document.hidden || frameTimer !== null || frame) return;
+      frameTimer = window.setTimeout(() => {
+        frameTimer = null;
+        frame = window.requestAnimationFrame(draw);
+      }, 33);
     };
 
     const draw = (now: number) => {
-      if (disposed) return;
-      if (now - lastFrame < 28) { frame = window.requestAnimationFrame(draw); return; }
+      frame = 0;
+      if (disposed || document.hidden) { frame = 0; return; }
       const delta = lastFrame ? Math.min(.05, (now - lastFrame) / 1000) : 1 / 30;
       lastFrame = now;
       ctx.clearRect(0, 0, width, height);
@@ -260,18 +271,33 @@ function ElectricBackground() {
         for (const path of strike.paths) drawBoltPath(path, elapsed, flicker * strike.strength);
       }
       ctx.restore();
-      frame = window.requestAnimationFrame(draw);
+      scheduleNextFrame();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        window.cancelAnimationFrame(frame);
+        if (frameTimer !== null) window.clearTimeout(frameTimer);
+        frameTimer = null;
+        frame = 0;
+      } else if (!frame && !disposed) {
+        lastFrame = 0;
+        frame = window.requestAnimationFrame(draw);
+      }
     };
 
     resize();
     window.addEventListener('resize', resize);
     window.addEventListener('pointermove', addCursorStars, { passive: true });
+    document.addEventListener('visibilitychange', onVisibilityChange);
     frame = window.requestAnimationFrame(draw);
     return () => {
       disposed = true;
       window.cancelAnimationFrame(frame);
+      if (frameTimer !== null) window.clearTimeout(frameTimer);
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', addCursorStars);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, []);
 
