@@ -122,8 +122,8 @@ function App() {
     return () => window.removeEventListener('storage', syncPortfolioContent);
   }, []);
 
-  const adminPath = window.location.pathname.replace(/\/$/, '');
-  if (adminPath === '/social-profile') return <SocialProfile />;
+  const adminPath = window.location.pathname.replace(/\/$/, '') || '/';
+  if (adminPath === '/social-profile' || (import.meta.env.PROD && adminPath === '/')) return <SocialProfile />;
   if (adminPath.startsWith('/admin')) {
     const adminSection = adminPath.split('/')[2] || 'dashboard';
     return <Admin initialTab={adminSection} projects={projects} articles={articles} siteContent={siteContent} onSave={(nextProjects, nextArticles, nextSiteContent) => {
