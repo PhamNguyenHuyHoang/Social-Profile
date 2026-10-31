@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" fill="none">
+  <defs>
+    <radialGradient id="blueAura">
+      <stop stop-color="#087dff" stop-opacity=".24"/>
+      <stop offset=".48" stop-color="#075ac4" stop-opacity=".11"/>
+      <stop offset="1" stop-color="#00102a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="blackCore" x1="440" y1="80" x2="760" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050a12"/>
+      <stop offset=".22" stop-color="#01030a"/>
+      <stop offset=".55" stop-color="#000106"/>
+      <stop offset=".82" stop-color="#01040c"/>
+      <stop offset="1" stop-color="#030915"/>
+    </linearGradient>
+    <linearGradient id="leftFacet" x1="443" y1="150" x2="585" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111b2a" stop-opacity=".72"/>
+      <stop offset=".38" stop-color="#030710" stop-opacity=".54"/>
+      <stop offset="1" stop-color="#000207" stop-opacity=".8"/>
+    </linearGradient>
+    <linearGradient id="rightFacet" x1="760" y1="170" x2="605" y2="590" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0c1421" stop-opacity=".72"/>
+      <stop offset=".52" stop-color="#01040b" stop-opacity=".82"/>
+      <stop offset="1" stop-color="#080f1c" stop-opacity=".65"/>
+    </linearGradient>
+    <linearGradient id="blueEdge" x1="450" y1="120" x2="750" y2="610" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#78d9ff" stop-opacity=".95"/>
+      <stop offset=".5" stop-color="#087dff" stop-opacity=".54"/>
+      <stop offset="1" stop-color="#5cbcff" stop-opacity=".82"/>
+    </linearGradient>
+    <filter id="auraBlur" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="25"/>
+    </filter>
+    <filter id="edgeGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <ellipse cx="600" cy="360" rx="300" ry="340" fill="url(#blueAura)" filter="url(#auraBlur)"/>
+  <path d="M600 42 757 151 743 559 600 678 457 559 443 151Z" fill="url(#blackCore)" stroke="url(#blueEdge)" stroke-width="2.8" filter="url(#edgeGlow)"/>
+  <path d="M600 42 548 222 443 151 457 559 600 678Z" fill="url(#leftFacet)"/>
+  <path d="M600 42 654 216 757 151 743 559 600 678Z" fill="url(#rightFacet)"/>
+  <path d="M600 42 600 678M443 151 548 222 600 226 654 216 757 151M457 559 542 477 600 486 658 476 743 559" stroke="#278cff" stroke-opacity=".26" stroke-width="1.15"/>
+  <path d="M548 222 542 477 600 486 658 476 654 216M542 477 600 678 658 476" stroke="#7bccff" stroke-opacity=".11" stroke-width=".9"/>
+  <path d="M444 152 457 559 600 677M756 152 743 559 600 677" stroke="#77cfff" stroke-opacity=".42" stroke-width="1.1" filter="url(#edgeGlow)"/>
+</svg>
