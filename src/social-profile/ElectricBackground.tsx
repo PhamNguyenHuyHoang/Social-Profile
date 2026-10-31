@@ -36,7 +36,7 @@ function ElectricBackground() {
     let previousPointer: { x: number; y: number; time: number } | null = null;
     let lastPointerBurst = 0;
     const strikes: LightningStrike[] = [];
-    let nextStrike = performance.now() + 220;
+    let nextStrike = performance.now() + 700;
 
     // Midpoint displacement gives the bolt a sharp, irregular path at several scales.
     const jaggedPath = (start: Point, end: Point, spread: number) => {
@@ -62,7 +62,8 @@ function ElectricBackground() {
 
     const createStrike = (now: number) => {
       const paths: BoltPath[] = [];
-      const trunkCount = Math.random() > .62 ? 3 : 2;
+      // One or two strikes at a time keep the effect readable and reduce path work.
+      const trunkCount = Math.random() > .72 ? 2 : 1;
       const firstSide = Math.floor(Math.random() * 4);
       for (let boltIndex = 0; boltIndex < trunkCount; boltIndex += 1) {
         const side = (firstSide + boltIndex) % 4;
@@ -91,7 +92,7 @@ function ElectricBackground() {
         paths.push({ points: trunk, delay: boltIndex * random(12, 34), branch: false });
 
         // Side forks split off from every trunk and taper into smaller forks.
-        const branchCount = Math.round(random(6, 9));
+        const branchCount = Math.round(random(3, 5));
         for (let i = 0; i < branchCount; i += 1) {
           const anchorIndex = 3 + Math.floor(Math.random() * Math.max(1, trunk.length - 6));
           const anchor = trunk[anchorIndex];
@@ -103,7 +104,7 @@ function ElectricBackground() {
           const branch = jaggedPath(anchor, tip, branchLength * .24);
           paths.push({ points: branch, delay: random(24, 86), branch: true });
 
-          if (Math.random() > .62 && branch.length > 4) {
+          if (Math.random() > .78 && branch.length > 4) {
             const joint = branch[Math.max(2, branch.length - 3)];
             const forkAngle = angle + (Math.random() < .5 ? -1 : 1) * random(.58, 1.05);
             const forkLength = branchLength * random(.3, .55);
@@ -114,10 +115,10 @@ function ElectricBackground() {
       }
 
       strikes.push({ paths, born: now, life: random(540, 720), strength: random(.92, 1) });
-      if (strikes.length > 5) strikes.splice(0, strikes.length - 5);
-      nextStrike = now + random(420, 920);
+      if (strikes.length > 2) strikes.splice(0, strikes.length - 2);
+      nextStrike = now + random(900, 1600);
       // A real strike often has a close secondary return stroke.
-      if (Math.random() > .57) nextStrike = now + random(95, 180);
+      if (Math.random() > .78) nextStrike = now + random(180, 300);
     };
 
     const resize = () => {
@@ -129,7 +130,7 @@ function ElectricBackground() {
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      const amount = Math.min(1350, Math.max(520, Math.round(width * height / 850)));
+      const amount = Math.min(760, Math.max(320, Math.round(width * height / 1500)));
       particles = Array.from({ length: amount }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -165,7 +166,7 @@ function ElectricBackground() {
           star: Math.random() > .35, life: random(.65, 1.25), maxLife: 1.25,
         });
       }
-      if (particles.length > 1800) particles.splice(0, particles.length - 1800);
+      if (particles.length > 1000) particles.splice(0, particles.length - 1000);
     };
 
     const drawStar = (particle: Particle, alpha: number) => {
@@ -210,8 +211,8 @@ function ElectricBackground() {
         ctx.restore();
       };
       const widthScale = path.branch ? .52 : 1;
-      drawLine('#168dff', 7.4 * widthScale, alpha * .62, path.branch ? 0 : 8);
-      drawLine('#58baff', 3.6 * widthScale, alpha * .82, path.branch ? 0 : 3);
+      drawLine('#168dff', 6.2 * widthScale, alpha * .58, path.branch ? 0 : 5);
+      drawLine('#58baff', 2.8 * widthScale, alpha * .78, 0);
       drawLine('#f4fbff', 1.8 * widthScale, alpha, 0);
     };
 
@@ -220,7 +221,7 @@ function ElectricBackground() {
       frameTimer = window.setTimeout(() => {
         frameTimer = null;
         frame = window.requestAnimationFrame(draw);
-      }, 33);
+      }, 40);
     };
 
     const draw = (now: number) => {
